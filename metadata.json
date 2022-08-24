@@ -9,7 +9,7 @@
   "batch_size": 16,
   "learning_rate": 1e-3,
   "loss_function": "hybrid",
-  "dataset_dir": "../CDData/subset/",
+  "dataset_dir": "./ChangeDetectionDataset/Real/subset/",
   "weight_dir": "./outputs/",
   "log_dir": "./log/"
 }
