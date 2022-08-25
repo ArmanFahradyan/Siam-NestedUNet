@@ -7,9 +7,8 @@ import os
 import cv2
 import numpy as np
 
-# The Evaluation Methods in our paper are slightly different from this file.
-# In our paper, we use the evaluation methods in train.py. specifically, batch size is considered.
-# And the evaluation methods in this file usually produce higher numerical indicators.
+if not os.path.exists('./output_images'):
+    os.mkdir('./output_images')
 
 parser, metadata = get_parser_with_args()
 opt = parser.parse_args()
@@ -47,15 +46,11 @@ with torch.no_grad():
         c_matrix['fn'] += fn
         c_matrix['tp'] += tp
 
-        # print(labels.shape)
-
         for i in range(cd_preds.shape[0]):
             img = cd_preds[i].data.cpu().numpy().squeeze() * 255
             label = labels[i].data.cpu().numpy().squeeze() * 255
             file_path = './output_images/' + str(_names[ind*cd_preds.shape[0] + i])
-            file_path_label = './output_images/' + str(_names[ind*cd_preds.shape[0] + i] + "L")
-            cv2.imwrite(file_path + '.png', img)
-            cv2.imwrite(file_path_label + '.png', label)
+            cv2.imwrite(file_path + '.png', np.concatenate([label, 123*np.ones((256, 5)), img], axis=1))
 
         ind += 1
 

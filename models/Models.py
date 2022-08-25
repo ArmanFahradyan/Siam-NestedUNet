@@ -1,7 +1,3 @@
-# Kaiyu Li
-# https://github.com/likyoo
-#
-
 import torch.nn as nn
 import torch
 
