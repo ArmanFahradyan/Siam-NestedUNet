@@ -15,16 +15,17 @@ path1 = args.path1
 path2 = args.path2
 destination_path = args.destination_path
 
+
 def detect_change(path1, path2, destination_path, store_image=True, image1=None, image2=None):
 
     dev = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 
     path = './weights/snunet-32.pt'   # the path of the model
-    model = torch.load(path)
+    model = torch.load(path, map_location=dev)
 
-    if image1 == None and path1 != None:
+    if image1 is None and path1 is not None:
         image1 = cv2.imread(path1)
-    if image2 == None and path2 != None:
+    if image2 is None and path2 is not None:
         image2 = cv2.imread(path2)
 
     image1 = cv2.resize(image1, (256, 256))
@@ -61,6 +62,7 @@ def detect_change(path1, path2, destination_path, store_image=True, image1=None,
             file_path = destination_path + prediction_name
             cv2.imwrite(file_path + '.png', img)
     return img
+
 
 if __name__ == '__main__':
     detect_change(path1, path2, destination_path)
