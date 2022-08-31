@@ -287,7 +287,7 @@ class RandomProjectiveTransformation(object):
                     'label': mask}
 
         img2 = cv2.cvtColor(np.array(img2), cv2.COLOR_RGB2BGR)
-        mask = cv2.cvtColor(np.array(mask), cv2.COLOR_RGB2BGR)
+        mask = np.array(mask)
         # h, w, _ = img2.shape
         # img_src_coordinate = np.array([[0, 0], [0, h], [w, 0], [w, h]])
 
@@ -317,10 +317,6 @@ class RandomProjectiveTransformation(object):
 
         matrix = r_s_matrix @ l_matrix @ v_matrix
 
-
-
-
-
         # paste_coordinate = np.array([[2, 2], [3, h-1], [w+2, 1], [w, h]])
         # matrix, _ = cv2.findHomography(img_src_coordinate, paste_coordinate, 0)
         # print(matrix)
@@ -342,6 +338,7 @@ class RandomProjectiveTransformation(object):
         #
         # cropped_img = img2.copy()[row_start:row_finish, col_start:col_finish, :]
 
+
         # cropped_img_soft, cropped_mask_soft = self.cut(image=img2, diff_mask=mask, soft=True)
         cropped_img_hard, cropped_mask_hard = self.cut(image=img2, diff_mask=mask, soft=False)
 
@@ -353,13 +350,40 @@ class RandomProjectiveTransformation(object):
         # cv2.imwrite("./testing_dir/soft_ktrats_mask.jpg", cropped_mask_soft)
         # cv2.imwrite("./testing_dir/hard_ktrats_mask.jpg", cropped_mask_hard)
 
-        cropped_img_hard = cv2.resize(cropped_img_hard, (256, 256))
-        cropped_mask_hard = cv2.resize(cropped_mask_hard, (256, 256))
+
+        # cropped_img_hard = cv2.resize(cropped_img_hard, (256, 256))
+        # cropped_mask_hard = cv2.resize(cropped_mask_hard, (256, 256))
+
+        # cv2.imwrite("./testing_dir/hard_ktrats_chemmanuminch.jpg", cropped_img_hard)
+        # cv2.imwrite("./testing_dir/hard_ktrats_mask.jpg", cropped_mask_hard)
+
+        # ------------------------
+
+        # assert 1 == 0
+        #
+        # r_zeros = 256 - cropped_img_hard.shape[0]
+        # c_zeros = 256 - cropped_img_hard.shape[1]
+        #
+        # tmp = np.concatenate([cropped_img_hard, np.zeros((r_zeros, cropped_img_hard.shape[1], 3))], axis=0)
+        # cropped_img_hard = np.concatenate([tmp, np.zeros((256, c_zeros, 3))], axis=1)
+        # assert cropped_img_hard.shape == (256, 256, 3)
+        #
+        # tmp = np.concatenate([cropped_mask_hard, np.zeros((r_zeros, cropped_img_hard.shape[1]))], axis=0)
+        # cropped_mask_hard = np.concatenate([tmp, np.zeros((256, c_zeros))], axis=1)
+        # assert cropped_mask_hard.shape == (256, 256)
+
+        # ------------------------
 
         cropped_img_hard = cv2.cvtColor(cropped_img_hard, cv2.COLOR_BGR2RGB)
         cropped_img_hard = Image.fromarray(cropped_img_hard)
-        cropped_mask_hard = cv2.cvtColor(cropped_mask_hard, cv2.COLOR_BGR2RGB)
         cropped_mask_hard = Image.fromarray(cropped_mask_hard)
+
+        cropped_img_hard = cropped_img_hard.resize((256, 256), Image.BILINEAR)
+        cropped_mask_hard = cropped_mask_hard.resize((256, 256), Image.NEAREST)
+
+        # print(type(cropped_img_hard))
+
+        # print("finish")
 
         return {'image': (img1, cropped_img_hard),
                 'label': cropped_mask_hard}
