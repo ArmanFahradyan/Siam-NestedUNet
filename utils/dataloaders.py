@@ -36,11 +36,16 @@ def full_path_loader(data_dir):
     val_dataset = {}
     for cp in range(len(train_data)):
         train_dataset[cp] = {'image': train_data_path[cp],
-                         'label': train_label_paths[cp]}
+                             'label': train_label_paths[cp],
+                             'order': '12'}
+    for cp in range(len(train_data)):
+        train_dataset[cp+len(train_data)] = {'image': train_data_path[cp],
+                                             'label': train_label_paths[cp],
+                                             'order': '21'}
     for cp in range(len(valid_data)):
         val_dataset[cp] = {'image': val_data_path[cp],
-                         'label': val_label_paths[cp]}
-
+                           'label': val_label_paths[cp],
+                           'order': '12'}
 
     return train_dataset, val_dataset
 
@@ -64,16 +69,22 @@ def full_test_loader(data_dir):
     test_dataset = {}
     for cp in range(len(test_data)):
         test_dataset[cp] = {'image': test_data_path[cp],
-                           'label': test_label_paths[cp]}
+                            'label': test_label_paths[cp],
+                            'order': '12'}
 
     return test_dataset
 
-def cdd_loader(img_path, label_path, aug):
+
+def cdd_loader(img_path, label_path, order, aug):
     dir = img_path[0]
     name = img_path[1]
 
-    img1 = Image.open(dir + 'A/' + name)
-    img2 = Image.open(dir + 'B/' + name)
+    if order == '12':
+        img1 = Image.open(dir + 'A/' + name)
+        img2 = Image.open(dir + 'B/' + name)
+    else:
+        img1 = Image.open(dir + 'B/' + name)
+        img2 = Image.open(dir + 'A/' + name)
     label = Image.open(label_path)
     sample = {'image': (img1, img2), 'label': label}
 
@@ -95,10 +106,13 @@ class CDDloader(data.Dataset):
 
     def __getitem__(self, index):
 
-        img_path, label_path = self.full_load[index]['image'], self.full_load[index]['label']
+        img_path, label_path, order = self.full_load[index]['image'], \
+                                      self.full_load[index]['label'], \
+                                      self.full_load[index]['order']
 
         return self.loader(img_path,
                            label_path,
+                           order,
                            self.aug)
 
     def __len__(self):

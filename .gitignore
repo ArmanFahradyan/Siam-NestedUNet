@@ -3,3 +3,4 @@ ChangeDetectionDataset/
 output_images/
 output_img/
 testing_dir/
+testing.py

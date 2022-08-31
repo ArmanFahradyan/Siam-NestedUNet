@@ -5,6 +5,10 @@ import numpy as np
 from PIL import Image, ImageOps, ImageFilter
 import torchvision.transforms as transforms
 
+import cv2
+import random
+
+
 class Normalize(object):
     """Normalize a tensor image with mean and standard deviation.
     Args:
@@ -63,6 +67,7 @@ class RandomHorizontalFlip(object):
         return {'image': (img1, img2),
                 'label': mask}
 
+
 class RandomVerticalFlip(object):
     def __call__(self, sample):
         img1 = sample['image'][0]
@@ -75,6 +80,7 @@ class RandomVerticalFlip(object):
 
         return {'image': (img1, img2),
                 'label': mask}
+
 
 class RandomFixRotate(object):
     def __init__(self):
@@ -189,6 +195,7 @@ class FixScaleCrop(object):
         return {'image': img,
                 'label': mask}
 
+
 class FixedResize(object):
     def __init__(self, size):
         self.size = (size, size)  # size: (h, w)
@@ -208,6 +215,156 @@ class FixedResize(object):
                 'label': mask}
 
 
+class RandomProjectiveTransformation(object):
+    def __init__(self,
+                 angle_range=[-0.03, 0.03],
+                 scale_range=[1.04, 1.07],
+                 # v_range=[-0.5, 0.5],
+                 # v1_range=[-0.5, 0.5],
+                 # v2_range=[-0.5, 0.5],
+                 lyambda_range=[0.98, 1.02]):
+        self.angle_range = angle_range
+        self.scale_range = scale_range
+        # self.v_range = v_range
+        # self.v1_range = v1_range
+        # self.v2_range = v2_range
+        self.lyambda_range = lyambda_range
+
+    def cut(self, image, diff_mask, soft=True):
+        mask = (image == 0).all(axis=2)
+        # maaaaaask = mask * 255
+        # cv2.imwrite("./testing_dir/maaaaaask.jpg", maaaaaask)
+        mask_col = mask.all(axis=0)
+        mask_row = mask.all(axis=1)
+        row_start = np.argmin(mask_row)
+        row_finish = -np.argmin(mask_row[::-1])
+        col_start = np.argmin(mask_col)
+        col_finish = -np.argmin(mask_col[::-1])
+        cropped_image = image[row_start:row_finish, col_start:col_finish, :]
+        cropped_mask = diff_mask[row_start:row_finish, col_start:col_finish]
+        if soft:
+            return cropped_image, cropped_mask
+        mask = (cropped_image == 0).all(axis=2)
+        # maaaaaask = mask * 255
+        # cv2.imwrite("./testing_dir/maaaaaask.jpg", maaaaaask)
+        r1 = 0
+        r2 = -1
+        c1 = 0
+        c2 = -1
+        while np.sum(mask[r1]) >= 20:  # mask[r1, 0] and mask[r1, -1]:
+            r1 += 1
+        while np.sum(mask[r2]) >= 20:  # mask[r2, 0] and mask[r2, -1]:
+            r2 -= 1
+        while np.sum(mask[:, c1]) >= 20:  # mask[0, c1] and mask[-1, c1]:
+            c1 += 1
+        while np.sum(mask[:, c2]) >= 20:  # mask[0, c2] and mask[-1, c2]:
+            c2 -= 1
+        # c1 = np.argmin(mask[0])
+        # c2 = np.argmin(mask[-1])
+        # r1 = np.argmin(mask[:, 0])
+        # r2 = np.argmin(mask[:, -1])
+        # print(r1, r2)
+        # print(c1, c2)
+        # mask_col = mask.any(axis=0)
+        # mask_row = mask.any(axis=1)
+        # row_start = np.argmin(mask_row)
+        # row_finish = -np.argmin(mask_row[::-1])
+        # col_start = np.argmin(mask_col)
+        # col_finish = -np.argmin(mask_col[::-1])
+
+        # row_start, row_finish = min(r1, r2), max(r1, r2)+1
+        # col_start, col_finish = min(c1, c2), max(c1, c2) + 1
+        row_start, row_finish = r1, r2
+        col_start, col_finish = c1, c2
+        return cropped_image[row_start:row_finish, col_start:col_finish, :], cropped_mask[row_start:row_finish, col_start:col_finish]
+
+    def __call__(self, sample):
+        img1 = sample['image'][0]
+        img2 = sample['image'][1]
+        mask = sample['label']
+        if random.random() < 0.25:
+            return {'image': (img1, img2),
+                    'label': mask}
+
+        img2 = cv2.cvtColor(np.array(img2), cv2.COLOR_RGB2BGR)
+        mask = cv2.cvtColor(np.array(mask), cv2.COLOR_RGB2BGR)
+        # h, w, _ = img2.shape
+        # img_src_coordinate = np.array([[0, 0], [0, h], [w, 0], [w, h]])
+
+        angle = random.uniform(*self.angle_range)
+        scale = random.uniform(*self.scale_range)
+        # v = random.uniform(*self.v_range)
+        v = 1.02
+        # v1 = random.uniform(*self.v1_range)
+        v1 = 1e-04
+        # v2 = random.uniform(*self.v2_range)
+        v2 = 1e-04
+        lyambda = random.uniform(*self.lyambda_range)
+        if lyambda == 0:
+            lyambda = 1
+
+        v_matrix = np.array([[1, 0, 0],
+                             [0, 1, 0],
+                             [v1, v2, v]])
+
+        l_matrix = np.array([[lyambda, 0, 0],
+                             [0, 1/lyambda, 0],
+                             [0, 0, 1]])
+
+        r_s_matrix = np.array([[scale*np.cos(angle), -scale*np.sin(angle), 15],
+                               [scale*np.sin(angle), scale*np.cos(angle), 15],
+                               [0, 0, 1]])
+
+        matrix = r_s_matrix @ l_matrix @ v_matrix
+
+
+
+
+
+        # paste_coordinate = np.array([[2, 2], [3, h-1], [w+2, 1], [w, h]])
+        # matrix, _ = cv2.findHomography(img_src_coordinate, paste_coordinate, 0)
+        # print(matrix)
+        # print(matrix.shape)
+        img2 = cv2.warpPerspective(img2, matrix, (300, 300))
+        mask = cv2.warpPerspective(mask, matrix, (300, 300))
+        # cv2.imwrite("./testing_dir/chemmanuminch.jpg", img2)
+        # cv2.imwrite("./testing_dir/mask_chemmanuminch.jpg", mask)
+
+        # mask_col = (img2 == 0).all(axis=0)[:, 0]
+        # mask_row = (img2 == 0).all(axis=1)[:, 0]
+        # row_start = np.argmin(mask_row)
+        # row_finish = -np.argmin(mask_row[::-1])
+        # col_start = np.argmin(mask_col)
+        # col_finish = -np.argmin(mask_col[::-1])
+        #
+        # print(row_start, row_finish)
+        # print(col_start, col_finish)
+        #
+        # cropped_img = img2.copy()[row_start:row_finish, col_start:col_finish, :]
+
+        # cropped_img_soft, cropped_mask_soft = self.cut(image=img2, diff_mask=mask, soft=True)
+        cropped_img_hard, cropped_mask_hard = self.cut(image=img2, diff_mask=mask, soft=False)
+
+        # cropped_mask_hard = self.cut(image=mask, soft=True)
+        # print("soft:", cropped_img_soft.shape)
+        # print("hard:", cropped_img_hard.shape)
+        # cv2.imwrite("./testing_dir/soft_ktrats_chemmanuminch.jpg", cropped_img_soft)
+        # cv2.imwrite("./testing_dir/hard_ktrats_chemmanuminch.jpg", cropped_img_hard)
+        # cv2.imwrite("./testing_dir/soft_ktrats_mask.jpg", cropped_mask_soft)
+        # cv2.imwrite("./testing_dir/hard_ktrats_mask.jpg", cropped_mask_hard)
+
+        cropped_img_hard = cv2.resize(cropped_img_hard, (256, 256))
+        cropped_mask_hard = cv2.resize(cropped_mask_hard, (256, 256))
+
+        cropped_img_hard = cv2.cvtColor(cropped_img_hard, cv2.COLOR_BGR2RGB)
+        cropped_img_hard = Image.fromarray(cropped_img_hard)
+        cropped_mask_hard = cv2.cvtColor(cropped_mask_hard, cv2.COLOR_BGR2RGB)
+        cropped_mask_hard = Image.fromarray(cropped_mask_hard)
+
+        return {'image': (img1, cropped_img_hard),
+                'label': cropped_mask_hard}
+
+
 '''
 We don't use Normalize here, because it will bring negative effects.
 the mask of ground truth is converted to [0,1] in ToTensor() function.
@@ -216,6 +373,7 @@ train_transforms = transforms.Compose([
             RandomHorizontalFlip(),
             RandomVerticalFlip(),
             RandomFixRotate(),
+            RandomProjectiveTransformation(),
             # RandomScaleCrop(base_size=self.args.base_size, crop_size=self.args.crop_size),
             # RandomGaussianBlur(),
             # Normalize(mean=(0.485, 0.456, 0.406), std=(0.229, 0.224, 0.225)),
