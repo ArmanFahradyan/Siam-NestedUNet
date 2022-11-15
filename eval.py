@@ -17,13 +17,15 @@ dev = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 
 test_loader = get_test_loaders(opt)
 
-path = './weights/snunet-32.pt'   # the path of the model
+path = './tmp1/checkpoint_epoch_199.pt' # './weights/snunet-32.pt'  #    # the path of the model
 model = torch.load(path)
 
 c_matrix = {'tn': 0, 'fp': 0, 'fn': 0, 'tp': 0}
 model.eval()
 
-_names = [i for i in os.listdir('./ChangeDetectionDataset/Real/subset/test/A/') if not i.startswith('.')]
+_names_path = './data_256/test/A/'  # './ChangeDetectionDataset/Real/subset/test/A/'
+_names = [i for i in os.listdir(_names_path) if not i.startswith('.')]
+_names.sort()
 
 with torch.no_grad():
     tbar = tqdm(test_loader)
@@ -34,7 +36,7 @@ with torch.no_grad():
         batch_img2 = batch_img2.float().to(dev)
         labels = labels.long().to(dev)
 
-        cd_preds = model(batch_img1, batch_img2)
+        cd_preds = model(batch_img2, batch_img1)  # model(batch_img1, batch_img2)
         cd_preds = cd_preds[-1]
         _, cd_preds = torch.max(cd_preds, 1)
 
@@ -50,7 +52,7 @@ with torch.no_grad():
             img = cd_preds[i].data.cpu().numpy().squeeze() * 255
             label = labels[i].data.cpu().numpy().squeeze() * 255
             file_path = './output_images/' + str(_names[ind*cd_preds.shape[0] + i])
-            cv2.imwrite(file_path + '.png', np.concatenate([label, 123*np.ones((256, 5)), img], axis=1))
+            cv2.imwrite(file_path + '.png', np.concatenate([label, 123*np.ones((label.shape[0], 5)), img], axis=1))
 
         ind += 1
 

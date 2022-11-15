@@ -16,12 +16,13 @@ path2 = args.path2
 destination_path = args.destination_path
 
 
-def detect_change(path1, path2, destination_path, store_image=True, image1=None, image2=None):
+def detect_change(path1, path2, destination_path, store_image=True, image1=None, image2=None, model=None):
 
     dev = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 
-    path = './weights/snunet-32.pt'   # the path of the model
-    model = torch.load(path, map_location=dev)
+    if model is None:
+        path = './tmp_256trained/checkpoint_epoch_199.pt'  # './weights/snunet-32.pt'   # the path of the model
+        model = torch.load(path, map_location=dev)
 
     if image1 is None and path1 is not None:
         image1 = cv2.imread(path1)

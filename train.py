@@ -52,7 +52,11 @@ train_loader, val_loader = get_loaders(opt)
 Load Model then define other aspects of the model
 """
 logging.info('LOADING Model')
-model = load_model(opt, dev)
+if opt.model_path == "":
+    print("bareeeeeeev")
+    model = load_model(opt, dev)
+else:
+    model = torch.load(opt.model_path)
 
 criterion = get_criterion(opt)
 optimizer = torch.optim.AdamW(model.parameters(), lr=opt.learning_rate) # Be careful when you adjust learning rate, you can refer to the linear scaling rule
@@ -90,6 +94,8 @@ for epoch in range(opt.epochs):
 
         # Get model predictions, calculate loss, backprop
         cd_preds = model(batch_img1, batch_img2)
+
+        # print(cd_preds[0].size(), labels.size())
 
         cd_loss = criterion(cd_preds, labels)
         loss = cd_loss

@@ -1,6 +1,10 @@
 weights/
 ChangeDetectionDataset/
-output_images/
+data_test
+.venv/
+*output*/
+tmp*/
+log*/
 output_img/
 testing_dir/
 testing.py

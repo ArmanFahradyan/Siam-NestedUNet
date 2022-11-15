@@ -5,11 +5,14 @@
   "num_workers": 8,
   "num_channel": 3,
   "EF": false,
-  "epochs": 100,
+  "epochs": 200,
   "batch_size": 8,
   "learning_rate": 1e-3,
   "loss_function": "hybrid",
-  "dataset_dir": "./ChangeDetectionDataset/Real/subset/",
+  "dataset_dir": "./data_256_INTER_AREA/",
+  "model_path": "",
+  "//model_path": "./tmp1/checkpoint_epoch_199.pt", 
+  "//dataset_dir": "./ChangeDetectionDataset/Real/subset/",
   "weight_dir": "./outputs/",
   "log_dir": "./log/"
 }

@@ -16,7 +16,7 @@ path2 = args.path2
 destination_path = args.destination_path
 
 
-def divide_and_detect(path1, path2, destination_path): 
+def divide_and_detect(path1, path2, destination_path, store_image=True): 
     image1 = cv2.imread(path1)
     image2 = cv2.imread(path2)
     assert (image1.shape == image2.shape)
@@ -64,15 +64,17 @@ def divide_and_detect(path1, path2, destination_path):
 
     # saving result
 
-    filename = path1.split('/')[-1]
-    prediction_name = "diff_map" + filename[:filename.rfind('.')]
-    if not os.path.exists(destination_path):
-        os.mkdir(destination_path)
-    file_path = destination_path + prediction_name
-    cv2.imwrite(file_path + '.png', result)
+    if store_image:
+        filename = path1.split('/')[-1]
+        prediction_name = "diff_map" + filename[:filename.rfind('.')]
+        if not os.path.exists(destination_path):
+            os.mkdir(destination_path)
+        file_path = destination_path + prediction_name
+        cv2.imwrite(file_path + '.png', result)
+
     return result
 
 
 if __name__ == '__main__':
-    divide_and_detect(path1, path2, destination_path)
+    divide_and_detect(path1, path2, destination_path, True)
     
