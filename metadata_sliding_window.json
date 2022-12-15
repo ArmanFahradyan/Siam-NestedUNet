@@ -1,0 +1,8 @@
+{
+    "dataset_dir": "./CDD_original_without_add/",
+    "model_path": "./weights/snunet-32.pt",
+    "output_dir": "./output_images_sliding_window_str64_vitae_weights_CDD_original_without_add/",
+    "image_shape": [1024, 1024],
+    "kernel_size": 256,
+    "stride": 64
+}

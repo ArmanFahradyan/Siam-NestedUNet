@@ -8,21 +8,25 @@ parser = argparse.ArgumentParser()
 parser.add_argument('-p1', "--path1", type=str, default='', help="path of the first image")
 parser.add_argument('-p2', "--path2", type=str, default='', help="path of the second image")
 parser.add_argument('-pd', "--destination_path", default='', type=str, help="path of the destination directory")
+parser.add_argument('-pm', "--model_path", default='', type=str, help="path of the trained model")
 
 args = parser.parse_args()
 
 path1 = args.path1
 path2 = args.path2
 destination_path = args.destination_path
+model_path = args.model_path
 
 
-def detect_change(path1, path2, destination_path, store_image=True, image1=None, image2=None, model=None):
+def detect_change(path1, path2, destination_path, store_image=True, image1=None, image2=None, model=None, model_path=None):
+
+    assert model is not None or model_path is not None, "provide either the model or its path"
 
     dev = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 
     if model is None:
-        path = './tmp_256trained/checkpoint_epoch_199.pt'  # './weights/snunet-32.pt'   # the path of the model
-        model = torch.load(path, map_location=dev)
+        # path = './tmp_256trained/checkpoint_epoch_199.pt'  # './weights/snunet-32.pt'   # the path of the model
+        model = torch.load(model_path, map_location=dev)
 
     if image1 is None and path1 is not None:
         image1 = cv2.imread(path1)
@@ -66,4 +70,4 @@ def detect_change(path1, path2, destination_path, store_image=True, image1=None,
 
 
 if __name__ == '__main__':
-    detect_change(path1, path2, destination_path)
+    detect_change(path1, path2, destination_path, False, None, None, None, model_path)

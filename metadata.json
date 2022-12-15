@@ -5,14 +5,13 @@
   "num_workers": 8,
   "num_channel": 3,
   "EF": false,
-  "epochs": 200,
+  "epochs": 70,
   "batch_size": 8,
   "learning_rate": 1e-3,
   "loss_function": "hybrid",
-  "dataset_dir": "./data_256_INTER_AREA/",
-  "model_path": "",
-  "//model_path": "./tmp1/checkpoint_epoch_199.pt", 
-  "//dataset_dir": "./ChangeDetectionDataset/Real/subset/",
-  "weight_dir": "./outputs/",
-  "log_dir": "./log/"
+  "dataset_dir": "./datasets/CDD_256/",
+  "output_dir": "./output_images/simple/tmp/",
+  "model_path": "./model_weights/tmp/",
+  "//weight_dir": "./model_weights/tmp/",
+  "log_dir": "./logs/log/"
 }

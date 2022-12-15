@@ -1,8 +1,8 @@
 import argparse as ag
 import json
 
-def get_parser_with_args(metadata_json='metadata.json'):
-    parser = ag.ArgumentParser(description='Training change detection network')
+def get_parser_with_args(metadata_json='metadata.json', description='Training change detection network'):
+    parser = ag.ArgumentParser(description=description)
 
     with open(metadata_json, 'r') as fin:
         metadata = json.load(fin)

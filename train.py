@@ -173,7 +173,7 @@ for epoch in range(opt.epochs):
             # log the batch mean metrics
             mean_val_metrics = get_mean_metrics(val_metrics)
 
-            for k, v in mean_train_metrics.items():
+            for k, v in mean_val_metrics.items(): 
                 writer.add_scalars(str(k), {'val': v}, total_step)
 
             # clear batch variables from memory
@@ -195,15 +195,17 @@ for epoch in range(opt.epochs):
             metadata['validation_metrics'] = mean_val_metrics
 
             # Save model and log
-            if not os.path.exists('./tmp'):
-                os.mkdir('./tmp')
-            with open('./tmp/metadata_epoch_' + str(epoch) + '.json', 'w') as fout:
+            if not os.path.exists(opt.model_path):
+                os.mkdir(opt.model_path)
+            with open(f'./{opt.model_path}/metadata_epoch_' + str(epoch) + '.json', 'w') as fout:
                 json.dump(metadata, fout)
 
-            torch.save(model, './tmp/checkpoint_epoch_'+str(epoch)+'.pt')
+            torch.save(model, f'./{opt.model_path}/checkpoint_epoch_'+str(epoch)+'.pt')
 
             # comet.log_asset(upload_metadata_file_path)
             best_metrics = mean_val_metrics
+        else:
+            print(f"???epoch_{epoch}", mean_val_metrics['cd_precisions'], mean_val_metrics['cd_recalls'], mean_val_metrics['cd_f1scores'])
 
 
         print('An epoch finished.')

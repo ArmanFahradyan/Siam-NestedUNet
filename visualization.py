@@ -9,9 +9,6 @@ import os
 from tqdm import tqdm
 import cv2
 
-if not os.path.exists('./output_img'):
-    os.mkdir('./output_img')
-
 parser, metadata = get_parser_with_args()
 opt = parser.parse_args()
 
@@ -19,8 +16,10 @@ dev = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 
 test_loader = get_test_loaders(opt, batch_size=1)
 
-path = 'weights/snunet-32.pt'   # the path of the model
-model = torch.load(path)
+if not os.path.exists(opt.output_dir):
+    os.mkdir(opt.output_dir)
+
+model = torch.load(opt.model_path)
 
 model.eval()
 index_img = 0
@@ -40,7 +39,7 @@ with torch.no_grad():
         cd_preds = cd_preds.data.cpu().numpy()
         cd_preds = cd_preds.squeeze() * 255
 
-        file_path = './output_img/' + str(index_img).zfill(5)
+        file_path = opt.output_dir + str(index_img).zfill(5)
         cv2.imwrite(file_path + '.png', cd_preds)
 
         index_img += 1

@@ -7,8 +7,8 @@ predictions_divided_path = './output_images_EBDD/'
 images_path = './data_512/val/'
 output_dir = './visualized_outputs/'
 
-if not os.path.exists('./visualized_outputs'):
-    os.mkdir('./visualized_outputs')
+if not os.path.exists(output_dir):
+    os.mkdir(output_dir)
 
 _names = [i for i in os.listdir(predictions_256_path) if not i.startswith('.')]
 _names.sort()

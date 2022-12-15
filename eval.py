@@ -7,23 +7,24 @@ import os
 import cv2
 import numpy as np
 
-if not os.path.exists('./output_images'):
-    os.mkdir('./output_images')
+# output_dir = './output_images_CDD_256_original_weights/'
 
 parser, metadata = get_parser_with_args()
 opt = parser.parse_args()
+
+if not os.path.exists(opt.output_dir):
+    os.mkdir(opt.output_dir)
 
 dev = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 
 test_loader = get_test_loaders(opt)
 
-path = './tmp1/checkpoint_epoch_199.pt' # './weights/snunet-32.pt'  #    # the path of the model
-model = torch.load(path)
+model = torch.load(opt.model_path)
 
 c_matrix = {'tn': 0, 'fp': 0, 'fn': 0, 'tp': 0}
 model.eval()
 
-_names_path = './data_256/test/A/'  # './ChangeDetectionDataset/Real/subset/test/A/'
+_names_path = opt.dataset_dir+"test/A/"
 _names = [i for i in os.listdir(_names_path) if not i.startswith('.')]
 _names.sort()
 
@@ -36,12 +37,17 @@ with torch.no_grad():
         batch_img2 = batch_img2.float().to(dev)
         labels = labels.long().to(dev)
 
-        cd_preds = model(batch_img2, batch_img1)  # model(batch_img1, batch_img2)
+        cd_preds = model(batch_img1, batch_img2) 
         cd_preds = cd_preds[-1]
         _, cd_preds = torch.max(cd_preds, 1)
 
-        tn, fp, fn, tp = confusion_matrix(labels.data.cpu().numpy().flatten(),
+        ans_conf_mat = confusion_matrix(labels.data.cpu().numpy().flatten(),
                         cd_preds.data.cpu().numpy().flatten()).ravel()
+
+        if len(ans_conf_mat) == 1:
+            tn, fp, fn, tp = ans_conf_mat[0], 0, 0, 0
+        else:
+            tn, fp, fn, tp = ans_conf_mat
 
         c_matrix['tn'] += tn
         c_matrix['fp'] += fp
@@ -51,7 +57,7 @@ with torch.no_grad():
         for i in range(cd_preds.shape[0]):
             img = cd_preds[i].data.cpu().numpy().squeeze() * 255
             label = labels[i].data.cpu().numpy().squeeze() * 255
-            file_path = './output_images/' + str(_names[ind*cd_preds.shape[0] + i])
+            file_path = opt.output_dir + str(_names[ind*cd_preds.shape[0] + i])
             cv2.imwrite(file_path + '.png', np.concatenate([label, 123*np.ones((label.shape[0], 5)), img], axis=1))
 
         ind += 1
