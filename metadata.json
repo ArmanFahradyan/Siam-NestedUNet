@@ -9,9 +9,9 @@
   "batch_size": 8,
   "learning_rate": 1e-3,
   "loss_function": "hybrid",
-  "dataset_dir": "./datasets/CDD_256/",
-  "output_dir": "./output_images/simple/tmp/",
-  "model_path": "./model_weights/tmp/",
+  "dataset_dir": "./datasets/data_256/",
+  "output_dir": "./output_images/simple/data_256_by_data_256_200epoch_2/",
+  "model_path": "./model_weights/tmp_data_256_200epoch/checkpoint_epoch_199.pt",
   "//weight_dir": "./model_weights/tmp/",
   "log_dir": "./logs/log/"
 }

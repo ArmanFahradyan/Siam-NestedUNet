@@ -57,8 +57,8 @@ with torch.no_grad():
         for i in range(cd_preds.shape[0]):
             img = cd_preds[i].data.cpu().numpy().squeeze() * 255
             label = labels[i].data.cpu().numpy().squeeze() * 255
-            file_path = opt.output_dir + str(_names[ind*cd_preds.shape[0] + i])
-            cv2.imwrite(file_path + '.png', np.concatenate([label, 123*np.ones((label.shape[0], 5)), img], axis=1))
+            file_path = opt.output_dir + str(_names[ind*opt.batch_size + i]) # cd_preds.shape[0]
+            cv2.imwrite(file_path, np.concatenate([label, 123*np.ones((label.shape[0], 5)), img], axis=1))
 
         ind += 1
 
